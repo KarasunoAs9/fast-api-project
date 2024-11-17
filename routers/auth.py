@@ -11,16 +11,16 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
 
 
-router = APIRouter()
+router = APIRouter(prefix='/auth', tags=['auth'])
 
 SECRET_KEY = "48f4fbe5e370c4443eb0e6373632b33a87e819723b7227a9023a3c0516a286a1"
 ALGORITHM = "HS256"
 
 bcrypt_context = CryptContext("bcrypt") 
-oauth2_bearer = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 class Token(BaseModel):
-    acces_token: str
+    access_token: str
     token_type: str
 
 def get_db():
@@ -49,11 +49,13 @@ def create_acces_token(username: str, user_id: int, expires_delta: timedelta):
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
     try:
-        payload = jwt.decode(token, SECRET_KEY, [ALGORITHM])
-        username: str = payload.get("username")
-        user_id: str = payload.get("user_id")
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        user_id: str = payload.get("id")
         if username is None or user_id is None:
             raise HTTPException(401, "User is not authenticated")
+        return {"username": username, "id": user_id}
+    
     except JWTError:
         raise HTTPException(401, "User is not authenticated")
         
@@ -66,11 +68,11 @@ class CreateUserRequest(BaseModel):
     password: Annotated[str, Field(min_length=8)]
     role: Annotated[str, Field(min_length=3)]
 
-@router.get("/auth/users")
+@router.get("/")
 async def print_all_users(db: db_dependency):
     return db.query(Users).all()
 
-@router.post("/auth/create-user")
+@router.post("/create-user")
 async def create_user(db: db_dependency, user_request: CreateUserRequest):
     create_user_model = Users(
         email=user_request.email,
@@ -83,7 +85,7 @@ async def create_user(db: db_dependency, user_request: CreateUserRequest):
     db.add(create_user_model)
     db.commit() 
     
-@router.delete("/auth/delet-user/{id}")
+@router.delete("/delet-user/{id}")
 async def delete_user(db: db_dependency, id: Annotated[int, Path(gt=0)]):
     user = db.query(Users).filter(Users.id == id).first()
     if user is None:
@@ -91,12 +93,12 @@ async def delete_user(db: db_dependency, id: Annotated[int, Path(gt=0)]):
     db.delete(user)
     db.commit()
     
-@router.post("/auth/user/", response_model=Token)
+@router.post("/token", response_model=Token)
 async def login_user(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
     user = authenticated_user(form_data.username, form_data.password, db)
     if not user:
         return HTTPException(404, "Please enter a correct username or password")
     
     token = create_acces_token(user.username, user.id, timedelta(minutes=20))
-    return {"acces_token": token, "token_type": "bearer"}
+    return {"access_token": token, "token_type": "bearer"}
     
