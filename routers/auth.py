@@ -41,8 +41,8 @@ def authenticated_user(username: str, password: str, db):
         return False
     return user
 
-def create_acces_token(username: str, user_id: int, expires_delta: timedelta):
-    encode = {"sub": username, "id": user_id}
+def create_acces_token(username: str, user_id: int, user_role: str,expires_delta: timedelta):
+    encode = {"sub": username, "id": user_id, "role": user_role}
     expiration = datetime.now(timezone.utc) + expires_delta
     encode.update({"exp": expiration})
     return jwt.encode(encode, SECRET_KEY, ALGORITHM)
@@ -52,9 +52,10 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         user_id: str = payload.get("id")
+        user_role: str = payload.get("role")
         if username is None or user_id is None:
             raise HTTPException(401, "User is not authenticated")
-        return {"username": username, "id": user_id}
+        return {"username": username, "id": user_id, "role": user_role}
     
     except JWTError:
         raise HTTPException(401, "User is not authenticated")
@@ -99,6 +100,6 @@ async def login_user(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     if not user:
         return HTTPException(404, "Please enter a correct username or password")
     
-    token = create_acces_token(user.username, user.id, timedelta(minutes=20))
+    token = create_acces_token(user.username, user.id, user.role, timedelta(minutes=20))
     return {"access_token": token, "token_type": "bearer"}
     

@@ -7,6 +7,7 @@ from database import SessionLocal
 from starlette import status
 from .auth import get_current_user
 
+
 router = APIRouter(prefix='/api', tags=['todo'])
 
 def get_db():
@@ -15,7 +16,7 @@ def get_db():
         yield db
     finally:
         db.close()
-        
+    
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
 
