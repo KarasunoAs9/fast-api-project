@@ -1,5 +1,11 @@
-def test_equale():
-    assert 3 == 3
+from fastapi.testclient import TestClient
+from fastapi import status
+from .. import main
 
-def test_mbs():
-    assert 2 + 1 == 3
+client = TestClient(main.app)
+
+def test_healthy():
+    responce = client.get('/healthy')
+    assert responce.status_code == status.HTTP_200_OK
+    assert responce.json() == {"status": "Healthy"}
+

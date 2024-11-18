@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, Path
 from pydantic import BaseModel, Field
 from typing import Annotated
 from sqlalchemy.orm import Session
-from models import Todos
+from ..models import Todos
 from .auth import get_current_user
-from database import SessionLocal
+from ..database import SessionLocal
 
 router = APIRouter(prefix='/admin', tags=['admin'])
         
