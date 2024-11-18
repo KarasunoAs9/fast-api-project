@@ -68,6 +68,7 @@ class CreateUserRequest(BaseModel):
     last_name: Annotated[str, Field(min_length=3)]
     password: Annotated[str, Field(min_length=8)]
     role: Annotated[str, Field(min_length=3)]
+    phone_number: Annotated[str, Field(min_length=3)]
 
 @router.get("/")
 async def print_all_users(db: db_dependency):
@@ -82,6 +83,7 @@ async def create_user(db: db_dependency, user_request: CreateUserRequest):
         last_name=user_request.last_name,
         hashed_password=bcrypt_context.hash(user_request.password),
         role=user_request.role,
+        phone_number = user_request.phone_number
     )
     db.add(create_user_model)
     db.commit() 

@@ -27,6 +27,9 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 
 class ChangePassword(BaseModel):
     password: Annotated[str, Field(min_length=8)]
+    
+class ChagePhoneNumber(BaseModel):
+    phone_number: Annotated[str, Field(min_length=3)]
 
 
 @router.get("/")
@@ -41,4 +44,11 @@ async def change_user_password(user: user_dependency, db: db_dependency, change_
     user_info = db.query(Users).filter(Users.id == user_id).first()
     
     user_info.hashed_password = bcrypt_context.hash(change_request.password)
+    db.commit()
+
+@router.patch('/change-phone_number')
+async def change_phone_number(user: user_dependency, db: db_dependency, change_request: ChagePhoneNumber):
+    user_id = user.get('id')
+    objct = db.query(Users).filter(Users.id == user_id).first()
+    objct.phone_number = change_request.phone_number
     db.commit()
