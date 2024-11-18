@@ -4,17 +4,23 @@ from pydantic import BaseModel, Field
 from typing import Annotated
 from sqlalchemy.orm import Session
 from models import Users
-from database import SessionLocal
 from starlette import status
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
-
+from database import SessionLocal
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
 SECRET_KEY = "48f4fbe5e370c4443eb0e6373632b33a87e819723b7227a9023a3c0516a286a1"
 ALGORITHM = "HS256"
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 bcrypt_context = CryptContext("bcrypt") 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
@@ -23,12 +29,6 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
         
 db_dependency = Annotated[Session, Depends(get_db)]
 

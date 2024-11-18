@@ -3,14 +3,15 @@ from pydantic import BaseModel, Field
 from typing import Annotated
 from sqlalchemy.orm import Session
 from models import Users
-from database import SessionLocal
 from starlette import status
 from .auth import get_current_user
 from passlib.context import CryptContext
+from database import SessionLocal
 
 router = APIRouter(prefix='/users', tags=['users'])
 
 bcrypt_context = CryptContext("bcrypt") 
+
 
 def get_db():
     db = SessionLocal()
@@ -18,7 +19,8 @@ def get_db():
         yield db
     finally:
         db.close()
-        
+
+
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
 
