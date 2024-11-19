@@ -42,7 +42,7 @@ async def add_todo(db: db_dependency, user: user_dependency, todo: TodoRequest):
     db.add(todo_model)
     db.commit()
 
-@router.put("/todo/update-todo/{id}")
+@router.put("/todo/update-todo/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def update_todo(user: user_dependency, db: db_dependency, id: Annotated[int, Path(gt=0)], todo_request: TodoRequest):
     user_id = user.get('id')
     todo_model = db.query(Todos).filter(Todos.id == id and Todos.owner_id == user_id).first()
@@ -54,7 +54,7 @@ async def update_todo(user: user_dependency, db: db_dependency, id: Annotated[in
     
     db.commit()
     
-@router.delete("/todo/delete-todo/{id}")
+@router.delete("/todo/delete-todo/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_todo(user: user_dependency, db: db_dependency, id: Annotated[int, Path(gt=0)]):
     user_id = user.get('id')
     todo_model = db.query(Todos).filter(Todos.id == id and Todos.owner_id == user_id).first()
