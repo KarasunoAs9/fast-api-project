@@ -5,9 +5,11 @@ from .utils import *
 app.dependency_overrides[get_db] = get_testdb   
 app.dependency_overrides[get_current_user] = get_test_user
 
+db = TestingSessionLocal()
 
 def test_aut(test_todo):
     responce = client.get('/api/todo')
+    print(responce.json())
     assert responce.status_code == status.HTTP_200_OK
     assert responce.json() == [{"complete": False,
                                 "title": "First todo",
@@ -41,7 +43,6 @@ def test_add_todo(test_todo):
     responce = client.post("/api/todo/add-todo", json=request_data)
     assert responce.status_code == status.HTTP_201_CREATED
     
-    db = TestingSessionLocal()
     model = db.query(Todos).filter(Todos.id == request_data['id']).first()
     assert model.title == request_data['title']
     assert model.priority == request_data['priority']
@@ -66,3 +67,6 @@ def test_delete_todo(test_todo):
     todo_id = test_todo.id
     responce = client.delete(f"/api/todo/delete-todo/{todo_id}")
     assert responce.status_code == status.HTTP_204_NO_CONTENT
+    
+    model = db.query(Todos).filter(Todos.id == todo_id).first()
+    assert model is None

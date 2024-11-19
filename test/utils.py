@@ -60,10 +60,34 @@ def test_todo():
     yield todo
     
 
-    with engine.connect() as connect:
-        connect.execute(text("DELETE FROM todos;"))
-        connect.execute(text("ALTER SEQUENCE todos_id_seq RESTART WITH 1;"))
-        connect.execute(text("DELETE FROM users;"))
-        connect.execute(text("ALTER SEQUENCE users_id_seq RESTART WITH 1;"))   
-        connect.commit()
-        
+    with engine.connect() as connection:
+        connection.execute(text("DELETE FROM todos;"))
+        connection.execute(text("ALTER SEQUENCE todos_id_seq RESTART WITH 1;"))
+        connection.execute(text("DELETE FROM users;"))
+        connection.execute(text("ALTER SEQUENCE users_id_seq RESTART WITH 1;"))   
+        connection.commit()
+
+@pytest.fixture
+def test_user():
+    db = TestingSessionLocal()
+    
+    user = Users(
+        email="tobi@gmail.com",
+        username="tobi",
+        first_name="tolibi",
+        last_name="roleri",
+        hashed_password="v2kj42v3kl42vj424j2k",
+        is_active=True,
+        role="user",
+        phone_number="8484564",
+    )
+    
+    db.add(user)
+    db.commit()
+
+    yield user
+    
+    with engine.connect() as connection:
+        connection.execute(text("DELETE FROM users;"))
+        connection.execute(text("ALTER SEQUENCE users_id_seq RESTART WITH 1;"))   
+        connection.commit()

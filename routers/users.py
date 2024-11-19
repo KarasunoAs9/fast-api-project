@@ -28,19 +28,25 @@ class ChagePhoneNumber(BaseModel):
 async def print_user_info(user: user_dependency, db:db_dependency):
     user_id = user.get('id')
     user_info = db.query(Users).filter(Users.id == user_id).first()
+    if user_info is None:
+        raise HTTPException(404, 'User not found')
     return user_info
 
-@router.patch('/change-password')
+@router.patch('/change-password', status_code=status.HTTP_204_NO_CONTENT)
 async def change_user_password(user: user_dependency, db: db_dependency, change_request: ChangePassword):
     user_id = user.get('id')
     user_info = db.query(Users).filter(Users.id == user_id).first()
+    if user_info is None:
+        raise HTTPException(404, 'User not found')
     
     user_info.hashed_password = bcrypt_context.hash(change_request.password)
     db.commit()
 
-@router.patch('/change-phone_number')
+@router.patch('/change-phone_number', status_code=status.HTTP_204_NO_CONTENT)
 async def change_phone_number(user: user_dependency, db: db_dependency, change_request: ChagePhoneNumber):
     user_id = user.get('id')
-    objct = db.query(Users).filter(Users.id == user_id).first()
-    objct.phone_number = change_request.phone_number
+    user_info = db.query(Users).filter(Users.id == user_id).first()
+    if user_info is None:
+        raise HTTPException(404, 'User not found')
+    user_info.phone_number = change_request.phone_number
     db.commit()
