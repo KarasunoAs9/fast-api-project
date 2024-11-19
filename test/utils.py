@@ -8,6 +8,7 @@ from ..main import app
 from sqlalchemy import text
 from ..models import Todos, Users
 import pytest
+from passlib.context import CryptContext
 
 SQLALCHEMY_DATABASE_URL = 'postgresql://postgres:1111@localhost:5432/Testdb'
 
@@ -19,6 +20,10 @@ Base.metadata.create_all(bind=engine)
 
 client = TestClient(app)
 
+bcrypt_context = CryptContext("bcrypt") 
+
+hashed_user_password = bcrypt_context.hash('12341234')
+
 def get_testdb():
     db = TestingSessionLocal()
     try:
@@ -28,6 +33,9 @@ def get_testdb():
 
 def get_test_user():
     return {"username": "dem", "id": 1, "role": "admin"}
+
+
+
 
 @pytest.fixture
 def test_todo():
@@ -76,7 +84,7 @@ def test_user():
         username="tobi",
         first_name="tolibi",
         last_name="roleri",
-        hashed_password="v2kj42v3kl42vj424j2k",
+        hashed_password=hashed_user_password,
         is_active=True,
         role="user",
         phone_number="8484564",
@@ -91,3 +99,4 @@ def test_user():
         connection.execute(text("DELETE FROM users;"))
         connection.execute(text("ALTER SEQUENCE users_id_seq RESTART WITH 1;"))   
         connection.commit()
+        

@@ -18,7 +18,7 @@ def test_print_user_info(test_user):
                                'phone_number': '8484564', 'id': 1, 
                                'email': 'tobi@gmail.com', 
                                'username': 'tobi', 
-                               'hashed_password': 'v2kj42v3kl42vj424j2k', 
+                               'hashed_password': hashed_user_password, 
                                'role': 'user'}
     
 def test_change_password_user(test_user):

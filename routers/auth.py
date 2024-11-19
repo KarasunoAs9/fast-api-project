@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path, Request
 from datetime import timedelta, datetime, timezone
 from pydantic import BaseModel, Field
 from typing import Annotated
@@ -9,6 +9,8 @@ from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
 from ..database import get_db
+from fastapi.templating import Jinja2Templates
+
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -25,6 +27,21 @@ class Token(BaseModel):
 
         
 db_dependency = Annotated[Session, Depends(get_db)]
+
+templates = Jinja2Templates("TodoApp/templates")
+
+### Pages ###
+
+@router.get("/login-page")
+async def login_page(request: Request):
+    return templates.TemplateResponse(request, 'login.html')
+
+
+@router.get('/register-page')
+async def register_page(request: Request):
+    return templates.TemplateResponse(request, "register.html")
+
+### Endpoints ###
 
 
 def authenticated_user(username: str, password: str, db):
@@ -68,7 +85,7 @@ class CreateUserRequest(BaseModel):
 async def print_all_users(db: db_dependency):
     return db.query(Users).all()
 
-@router.post("/create-user")
+@router.post("/create-user", status_code=status.HTTP_201_CREATED)
 async def create_user(db: db_dependency, user_request: CreateUserRequest):
     create_user_model = Users(
         email=user_request.email,
@@ -82,7 +99,7 @@ async def create_user(db: db_dependency, user_request: CreateUserRequest):
     db.add(create_user_model)
     db.commit() 
     
-@router.delete("/delet-user/{id}")
+@router.delete("/delet-user/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(db: db_dependency, id: Annotated[int, Path(gt=0)]):
     user = db.query(Users).filter(Users.id == id).first()
     if user is None:
