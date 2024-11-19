@@ -6,19 +6,11 @@ from ..models import Users
 from starlette import status
 from .auth import get_current_user
 from passlib.context import CryptContext
-from ..database import SessionLocal
+from ..database import get_db
 
 router = APIRouter(prefix='/users', tags=['users'])
 
 bcrypt_context = CryptContext("bcrypt") 
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 db_dependency = Annotated[Session, Depends(get_db)]

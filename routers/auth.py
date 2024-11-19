@@ -8,19 +8,13 @@ from starlette import status
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
-from ..database import SessionLocal
+from ..database import get_db
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
 SECRET_KEY = "48f4fbe5e370c4443eb0e6373632b33a87e819723b7227a9023a3c0516a286a1"
 ALGORITHM = "HS256"
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 bcrypt_context = CryptContext("bcrypt") 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")

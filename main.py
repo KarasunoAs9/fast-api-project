@@ -9,9 +9,6 @@ app = FastAPI()
 Base.metadata.create_all(bind=engine)
 
 
-@app.get('/')
-def default_page():
-    return {"status": "nice 200"}
 
 @app.get("/healthy")
 def check_healthy():
